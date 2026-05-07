@@ -1,0 +1,296 @@
+
+<h2 class="sr-only">MBA Task Manager — add, prioritize, and track academic tasks and deadlines</h2>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  .tm-root { font-family: 'Syne', sans-serif; padding: 1rem 0; }
+  .tm-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); padding-bottom: 1rem; }
+  .tm-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--color-text-primary); }
+  .tm-subtitle { font-size: 12px; font-family: 'Space Mono', monospace; color: var(--color-text-tertiary); }
+  .tm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .tm-stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; text-align: center; }
+  .tm-stat-num { font-size: 22px; font-weight: 800; color: var(--color-text-primary); font-family: 'Space Mono', monospace; display: block; }
+  .tm-stat-lbl { font-size: 11px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .tm-stat.urgent .tm-stat-num { color: #E24B4A; }
+  .tm-stat.done .tm-stat-num { color: #639922; }
+
+  .tm-add { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+  .tm-add-title { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .tm-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .tm-row input, .tm-row select { font-family: 'Syne', sans-serif; font-size: 13px; }
+  .tm-input-task { flex: 2; }
+  .tm-input-date { flex: 1; }
+  .tm-input-cat { flex: 1; }
+  .tm-input-pri { flex: 0 0 110px; }
+  .tm-add-btn { width: 100%; padding: 8px; background: var(--color-background-info); color: var(--color-text-info); border: none; border-radius: var(--border-radius-md); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; letter-spacing: 0.03em; transition: opacity 0.15s; }
+  .tm-add-btn:hover { opacity: 0.85; }
+
+  .tm-filters { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+  .tm-filter-btn { font-family: 'Syne', sans-serif; font-size: 12px; padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+  .tm-filter-btn.active { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+  .tm-focus-toggle { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 4px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-tertiary); cursor: pointer; }
+  .tm-focus-toggle.on { border-color: #639922; color: #639922; }
+
+  .tm-list { display: flex; flex-direction: column; gap: 6px; }
+  .tm-task { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; display: flex; align-items: center; gap: 10px; transition: opacity 0.2s, border-color 0.2s; animation: slideIn 0.2s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .tm-task:hover { border-color: var(--color-border-secondary); }
+  .tm-task.done-task { opacity: 0.45; }
+  .tm-task.urgent-task { border-left: 3px solid #E24B4A; }
+  .tm-task.soon-task { border-left: 3px solid #EF9F27; }
+  .tm-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--color-border-secondary); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; background: transparent; }
+  .tm-check:hover { border-color: var(--color-text-primary); }
+  .tm-check.checked { background: #639922; border-color: #639922; }
+  .tm-task-body { flex: 1; min-width: 0; }
+  .tm-task-name { font-size: 14px; font-weight: 600; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tm-task-name.strike { text-decoration: line-through; color: var(--color-text-tertiary); font-weight: 400; }
+  .tm-task-meta { display: flex; gap: 8px; align-items: center; margin-top: 3px; flex-wrap: wrap; }
+  .tm-badge { font-family: 'Space Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 400; }
+  .tm-badge.cat-exam { background: #EEEDFE; color: #3C3489; }
+  .tm-badge.cat-group { background: #E1F5EE; color: #085041; }
+  .tm-badge.cat-hw { background: #FAEEDA; color: #633806; }
+  .tm-badge.cat-reading { background: #E6F1FB; color: #0C447C; }
+  .tm-badge.cat-other { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+  .tm-badge.pri-high { background: #FCEBEB; color: #791F1F; }
+  .tm-badge.pri-med { background: #FAEEDA; color: #633806; }
+  .tm-badge.pri-low { background: #EAF3DE; color: #27500A; }
+  .tm-due { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--color-text-tertiary); }
+  .tm-due.overdue { color: #E24B4A; font-weight: 700; }
+  .tm-due.soon { color: #EF9F27; font-weight: 700; }
+  .tm-del { background: transparent; border: none; cursor: pointer; color: var(--color-text-tertiary); padding: 4px; border-radius: var(--border-radius-md); transition: color 0.15s; font-size: 16px; display: flex; align-items: center; }
+  .tm-del:hover { color: #E24B4A; }
+  .tm-empty { text-align: center; padding: 2rem; color: var(--color-text-tertiary); font-size: 13px; font-family: 'Space Mono', monospace; }
+  .tm-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-tertiary); margin: 1rem 0 6px; font-family: 'Space Mono', monospace; }
+  .tm-progress-bar { height: 3px; background: var(--color-background-secondary); border-radius: 2px; margin-bottom: 1.25rem; overflow: hidden; }
+  .tm-progress-fill { height: 100%; background: #639922; border-radius: 2px; transition: width 0.5s ease; }
+</style>
+
+<div class="tm-root">
+  <div class="tm-header">
+    <div>
+      <div class="tm-title">Task Matrix</div>
+      <div class="tm-subtitle" id="tm-date-display"></div>
+    </div>
+    <div class="tm-subtitle" id="tm-progress-text"></div>
+  </div>
+
+  <div class="tm-progress-bar"><div class="tm-progress-fill" id="tm-progress-fill" style="width:0%"></div></div>
+
+  <div class="tm-stats">
+    <div class="tm-stat"><span class="tm-stat-num" id="stat-total">0</span><span class="tm-stat-lbl">Total</span></div>
+    <div class="tm-stat urgent"><span class="tm-stat-num" id="stat-urgent">0</span><span class="tm-stat-lbl">Due Soon</span></div>
+    <div class="tm-stat done"><span class="tm-stat-num" id="stat-done">0</span><span class="tm-stat-lbl">Done</span></div>
+    <div class="tm-stat"><span class="tm-stat-num" id="stat-groups">0</span><span class="tm-stat-lbl">Meetings</span></div>
+  </div>
+
+  <div class="tm-add">
+    <div class="tm-add-title">+ Add task</div>
+    <div class="tm-row">
+      <input class="tm-input-task" type="text" id="inp-task" placeholder="Task name..." maxlength="80">
+      <input class="tm-input-date" type="date" id="inp-date">
+    </div>
+    <div class="tm-row">
+      <select class="tm-input-cat" id="inp-cat">
+        <option value="hw">Homework</option>
+        <option value="exam">Exam / Quiz</option>
+        <option value="group">Group Meeting</option>
+        <option value="reading">Reading</option>
+        <option value="other">Other</option>
+      </select>
+      <select class="tm-input-pri" id="inp-pri">
+        <option value="high">High priority</option>
+        <option value="med" selected>Med priority</option>
+        <option value="low">Low priority</option>
+      </select>
+    </div>
+    <button class="tm-add-btn" onclick="addTask()"><i class="ti ti-plus" aria-hidden="true"></i> Add to matrix</button>
+  </div>
+
+  <div class="tm-filters">
+    <button class="tm-filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="tm-filter-btn" onclick="setFilter('hw', this)">Homework</button>
+    <button class="tm-filter-btn" onclick="setFilter('exam', this)">Exams</button>
+    <button class="tm-filter-btn" onclick="setFilter('group', this)">Meetings</button>
+    <button class="tm-filter-btn" onclick="setFilter('reading', this)">Reading</button>
+    <button class="tm-focus-toggle" id="focus-btn" onclick="toggleFocus()">FOCUS MODE</button>
+  </div>
+
+  <div id="tm-list-container"></div>
+</div>
+
+<script>
+  let tasks = [];
+  let filter = 'all';
+  let focusMode = false;
+  let nextId = 1;
+
+  async function loadFromStorage() {
+    try {
+      const r = await window.storage.get('mba_tasks_v2');
+      if (r) {
+        const d = JSON.parse(r.value);
+        tasks = d.tasks || [];
+        nextId = d.nextId || (tasks.length + 1);
+      }
+    } catch(e) { tasks = []; }
+    render();
+  }
+
+  async function save() {
+    try {
+      await window.storage.set('mba_tasks_v2', JSON.stringify({ tasks, nextId }));
+    } catch(e) {}
+  }
+
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(dateStr + 'T00:00:00');
+    return Math.round((d - today) / 86400000);
+  }
+
+  function formatDue(dateStr) {
+    if (!dateStr) return '';
+    const days = daysUntil(dateStr);
+    if (days < 0) return `${Math.abs(days)}d overdue`;
+    if (days === 0) return 'due today';
+    if (days === 1) return 'due tomorrow';
+    return `due in ${days}d`;
+  }
+
+  function urgency(task) {
+    if (task.done || !task.date) return 'none';
+    const d = daysUntil(task.date);
+    if (d < 0) return 'overdue';
+    if (d <= 2) return 'urgent';
+    if (d <= 5) return 'soon';
+    return 'none';
+  }
+
+  function addTask() {
+    const name = document.getElementById('inp-task').value.trim();
+    if (!name) { document.getElementById('inp-task').focus(); return; }
+    const task = {
+      id: nextId++,
+      name,
+      date: document.getElementById('inp-date').value,
+      cat: document.getElementById('inp-cat').value,
+      pri: document.getElementById('inp-pri').value,
+      done: false,
+      created: Date.now()
+    };
+    tasks.unshift(task);
+    document.getElementById('inp-task').value = '';
+    save();
+    render();
+  }
+
+  function toggleDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; save(); render(); }
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    save();
+    render();
+  }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.tm-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function toggleFocus() {
+    focusMode = !focusMode;
+    const btn = document.getElementById('focus-btn');
+    btn.classList.toggle('on', focusMode);
+    btn.textContent = focusMode ? 'FOCUS: ON' : 'FOCUS MODE';
+    render();
+  }
+
+  function sortTasks(list) {
+    const priOrder = { high: 0, med: 1, low: 2 };
+    return [...list].sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      const ua = urgency(a), ub = urgency(b);
+      const uOrder = { overdue: 0, urgent: 1, soon: 2, none: 3 };
+      if (uOrder[ua] !== uOrder[ub]) return uOrder[ua] - uOrder[ub];
+      if (priOrder[a.pri] !== priOrder[b.pri]) return priOrder[a.pri] - priOrder[b.pri];
+      return 0;
+    });
+  }
+
+  function render() {
+    const now = new Date();
+    document.getElementById('tm-date-display').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    const urgentCount = tasks.filter(t => !t.done && (urgency(t) === 'urgent' || urgency(t) === 'overdue')).length;
+    const meetings = tasks.filter(t => t.cat === 'group' && !t.done).length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-urgent').textContent = urgentCount;
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-groups').textContent = meetings;
+
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    document.getElementById('tm-progress-fill').style.width = pct + '%';
+    document.getElementById('tm-progress-text').textContent = pct + '% complete';
+
+    let visible = tasks.filter(t => filter === 'all' || t.cat === filter);
+    visible = sortTasks(visible);
+
+    let displayTasks = visible;
+    if (focusMode) {
+      displayTasks = visible.filter(t => !t.done).slice(0, 3);
+    }
+
+    const container = document.getElementById('tm-list-container');
+    if (displayTasks.length === 0) {
+      container.innerHTML = '<div class="tm-empty">' + (focusMode ? '✓ nothing urgent right now' : 'no tasks yet — add one above') + '</div>';
+      return;
+    }
+
+    const catLabel = { hw: 'homework', exam: 'exam', group: 'group mtg', reading: 'reading', other: 'other' };
+    const priLabel = { high: 'high', med: 'med', low: 'low' };
+
+    let html = '';
+    if (focusMode) html += '<div class="tm-section-label">Focus — top ' + displayTasks.length + ' tasks</div>';
+
+    displayTasks.forEach(t => {
+      const u = urgency(t);
+      const dueText = formatDue(t.date);
+      const dueClass = u === 'overdue' ? 'overdue' : (u === 'urgent' || u === 'soon') ? 'soon' : '';
+      const taskClass = u === 'urgent' || u === 'overdue' ? 'urgent-task' : u === 'soon' ? 'soon-task' : '';
+
+      html += `<div class="tm-task ${t.done ? 'done-task' : ''} ${taskClass}">
+        <button class="tm-check ${t.done ? 'checked' : ''}" onclick="toggleDone(${t.id})" aria-label="${t.done ? 'Mark incomplete' : 'Mark complete'}">
+          ${t.done ? '<i class="ti ti-check" style="font-size:11px;color:white" aria-hidden="true"></i>' : ''}
+        </button>
+        <div class="tm-task-body">
+          <div class="tm-task-name ${t.done ? 'strike' : ''}">${t.name}</div>
+          <div class="tm-task-meta">
+            <span class="tm-badge cat-${t.cat}">${catLabel[t.cat]}</span>
+            <span class="tm-badge pri-${t.pri}">${priLabel[t.pri]}</span>
+            ${dueText ? `<span class="tm-due ${dueClass}">${dueText}</span>` : ''}
+          </div>
+        </div>
+        <button class="tm-del" onclick="deleteTask(${t.id})" aria-label="Delete task"><i class="ti ti-trash" aria-hidden="true"></i></button>
+      </div>`;
+    });
+
+    if (!focusMode && visible.filter(t => t.done).length > 0 && visible.filter(t => !t.done).length > 0) {
+      const doneSection = displayTasks.filter(t => t.done);
+      if (doneSection.length) html += '<div class="tm-section-label">Completed</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  document.getElementById('inp-task').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+  loadFromStorage();
+</script>
