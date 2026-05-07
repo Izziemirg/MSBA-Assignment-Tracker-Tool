@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Matrix — MBA Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+  <style>
+    :root {
+      --bg-primary:   #ffffff;
+      --bg-secondary: #f4f4f2;
+      --bg-tertiary:  #ebebea;
+      --bg-info:      #e6f1fb;
+      --text-primary:   #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary:  #888780;
+      --text-info:      #185fa5;
+      --border-light: rgba(0,0,0,0.12);
+      --border-mid:   rgba(0,0,0,0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --green: #639922;
+      --red:   #E24B4A;
+      --amber: #EF9F27;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary:   #1e1e1c;
+        --bg-secondary: #2a2a28;
+        --bg-tertiary:  #141412;
+        --bg-info:      #0c2d4a;
+        --text-primary:   #f0efe8;
+        --text-secondary: #b4b2a9;
+        --text-tertiary:  #888780;
+        --text-info:      #85b7eb;
+        --border-light: rgba(255,255,255,0.1);
+        --border-mid:   rgba(255,255,255,0.2);
+        --green: #97c459;
+        --red:   #f09595;
+        --amber: #FAC775;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2.5rem 1rem 4rem;
+    }
+
+    .app { width: 100%; max-width: 700px; }
+
+    /* ── Login screen ── */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      gap: 0;
+    }
+    .login-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-wordmark {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .login-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 2rem;
+    }
+    .login-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      text-align: left;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .login-input {
+      width: 100%;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      padding: 11px 14px;
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.15s;
+    }
+    .login-input:focus { border-color: var(--border-mid); }
+    .login-input::placeholder { color: var(--text-tertiary); }
+    .login-btn {
+      width: 100%;
+      padding: 11px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.8; }
+    .login-note {
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text-tertiary);
+      margin-top: 1.25rem;
+      line-height: 1.6;
+    }
+
+    /* ── Main app ── */
+    #app-screen { display: none; }
+
+    /* Header */
+    .tm-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      border-bottom: 0.5px solid var(--border-light);
+      padding-bottom: 1.25rem;
+      padding-top: 0.25rem;
+    }
+    .tm-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.75px;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+    .tm-subtitle {
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text-tertiary);
+    }
+    .tm-user-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-mid);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      margin-top: 4px;
+    }
+    .tm-user-btn:hover { color: var(--red); border-color: var(--red); }
+
+    /* Progress */
+    .tm-progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+    .tm-progress-bar { flex: 1; height: 3px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden; }
+    .tm-progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.5s ease; }
+    .tm-progress-text { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+
+    /* Stats */
+    .tm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+    .tm-stat { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px 12px; text-align: center; }
+    .tm-stat-num { font-size: 24px; font-weight: 800; color: var(--text-primary); font-family: 'Space Mono', monospace; display: block; line-height: 1.1; margin-bottom: 4px; }
+    .tm-stat-lbl { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .tm-stat.urgent .tm-stat-num { color: var(--red); }
+    .tm-stat.done   .tm-stat-num { color: var(--green); }
+
+    /* Add task card */
+    .tm-add {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.5rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .tm-add-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+    .tm-row { display: flex; gap: 10px; margin-bottom: 10px; }
+
+    input, select {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      padding: 10px 12px;
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--border-mid); }
+    input::placeholder { color: var(--text-tertiary); }
+
+    .tm-input-task { flex: 2; min-width: 0; }
+    .tm-input-date { flex: 1; min-width: 120px; }
+    .tm-input-cat  { flex: 1; min-width: 140px; }
+    .tm-input-pri  { flex: 1; min-width: 140px; }
+
+    .tm-add-btn {
+      width: 100%;
+      margin-top: 4px;
+      padding: 11px;
+      background: var(--bg-info);
+      color: var(--text-info);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: opacity 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tm-add-btn:hover { opacity: 0.8; }
+
+    /* Filters */
+    .tm-filters { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+    .tm-filter-btn {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border-mid);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tm-filter-btn.active {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-color: var(--text-primary);
+    }
+    .tm-focus-toggle {
+      margin-left: auto;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 0.5px solid var(--border-mid);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tm-focus-toggle.on { border-color: var(--green); color: var(--green); }
+
+    /* Task list */
+    .tm-list { display: flex; flex-direction: column; gap: 7px; }
+    .tm-task {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: opacity 0.2s, border-color 0.2s;
+      animation: slideIn 0.2s ease;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    .tm-task:hover { border-color: var(--border-mid); }
+    .tm-task.done-task   { opacity: 0.4; }
+    .tm-task.urgent-task { border-left: 3px solid var(--red); }
+    .tm-task.soon-task   { border-left: 3px solid var(--amber); }
+
+    .tm-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-mid);
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      transition: all 0.15s;
+    }
+    .tm-check:hover { border-color: var(--text-primary); }
+    .tm-check.checked { background: var(--green); border-color: var(--green); }
+
+    .tm-task-body { flex: 1; min-width: 0; }
+    .tm-task-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tm-task-name.strike { text-decoration: line-through; color: var(--text-tertiary); font-weight: 400; }
+    .tm-task-meta { display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+
+    .tm-badge { font-family: 'Space Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 3px; }
+    .tm-badge.cat-exam    { background: #EEEDFE; color: #3C3489; }
+    .tm-badge.cat-group   { background: #E1F5EE; color: #085041; }
+    .tm-badge.cat-hw      { background: #FAEEDA; color: #633806; }
+    .tm-badge.cat-reading { background: #E6F1FB; color: #0C447C; }
+    .tm-badge.cat-other   { background: #F1EFE8; color: #5F5E5A; }
+    .tm-badge.pri-high    { background: #FCEBEB; color: #791F1F; }
+    .tm-badge.pri-med     { background: #FAEEDA; color: #633806; }
+    .tm-badge.pri-low     { background: #EAF3DE; color: #27500A; }
+
+    @media (prefers-color-scheme: dark) {
+      .tm-badge.cat-exam    { background: #26215C; color: #AFA9EC; }
+      .tm-badge.cat-group   { background: #04342C; color: #5DCAA5; }
+      .tm-badge.cat-hw      { background: #412402; color: #FAC775; }
+      .tm-badge.cat-reading { background: #042C53; color: #85B7EB; }
+      .tm-badge.cat-other   { background: #2C2C2A; color: #B4B2A9; }
+      .tm-badge.pri-high    { background: #501313; color: #F09595; }
+      .tm-badge.pri-med     { background: #412402; color: #FAC775; }
+      .tm-badge.pri-low     { background: #173404; color: #C0DD97; }
+    }
+
+    .tm-due { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-tertiary); }
+    .tm-due.overdue { color: var(--red);   font-weight: 700; }
+    .tm-due.soon    { color: var(--amber); font-weight: 700; }
+
+    .tm-del {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      transition: color 0.15s;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+    }
+    .tm-del:hover { color: var(--red); }
+
+    .tm-empty {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      font-family: 'Space Mono', monospace;
+    }
+    .tm-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      margin: 1rem 0 8px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    @media (max-width: 520px) {
+      .tm-stats { grid-template-columns: repeat(2, 1fr); }
+      .tm-row   { flex-wrap: wrap; }
+      .tm-input-task, .tm-input-date, .tm-input-cat, .tm-input-pri { flex: 1 1 100%; }
+      .tm-focus-toggle { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Login Screen ── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-wordmark">Task Matrix</div>
+      <div class="login-tagline">MBA Planner — your workspace, your tasks</div>
+
+      <label class="login-label" for="login-name">Your name</label>
+      <input class="login-input" type="text" id="login-name" placeholder="e.g. Izzie" maxlength="32" autocomplete="off">
+
+      <label class="login-label" for="login-pin">4-digit PIN</label>
+      <input class="login-input" type="password" id="login-pin" placeholder="Set a PIN to protect your tasks" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+
+      <button class="login-btn" onclick="handleLogin()">Enter my workspace →</button>
+
+      <div class="login-note">
+        Your tasks are stored privately on this device.<br>
+        Your name + PIN keep them separate from other users.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── App Screen ── -->
+  <div id="app-screen">
+
+    <div class="tm-header">
+      <div>
+        <div class="tm-title">Task Matrix</div>
+        <div class="tm-subtitle" id="tm-date-display"></div>
+      </div>
+      <button class="tm-user-btn" id="user-btn" onclick="logout()"></button>
+    </div>
+
+    <div class="tm-progress-row">
+      <div class="tm-progress-bar">
+        <div class="tm-progress-fill" id="tm-progress-fill" style="width:0%"></div>
+      </div>
+      <span class="tm-progress-text" id="tm-progress-label">0% complete</span>
+    </div>
+
+    <div class="tm-stats">
+      <div class="tm-stat"><span class="tm-stat-num" id="stat-total">0</span><span class="tm-stat-lbl">Total</span></div>
+      <div class="tm-stat urgent"><span class="tm-stat-num" id="stat-urgent">0</span><span class="tm-stat-lbl">Due Soon</span></div>
+      <div class="tm-stat done"><span class="tm-stat-num" id="stat-done">0</span><span class="tm-stat-lbl">Done</span></div>
+      <div class="tm-stat"><span class="tm-stat-num" id="stat-groups">0</span><span class="tm-stat-lbl">Meetings</span></div>
+    </div>
+
+    <div class="tm-add">
+      <div class="tm-add-title">+ Add task</div>
+      <div class="tm-row">
+        <input class="tm-input-task" type="text" id="inp-task" placeholder="Task name..." maxlength="80">
+        <input class="tm-input-date" type="date" id="inp-date">
+      </div>
+      <div class="tm-row">
+        <select class="tm-input-cat" id="inp-cat">
+          <option value="hw">Homework</option>
+          <option value="exam">Exam / Quiz</option>
+          <option value="group">Group Meeting</option>
+          <option value="reading">Reading</option>
+          <option value="other">Other</option>
+        </select>
+        <select class="tm-input-pri" id="inp-pri">
+          <option value="high">High priority</option>
+          <option value="med" selected>Med priority</option>
+          <option value="low">Low priority</option>
+        </select>
+      </div>
+      <button class="tm-add-btn" onclick="addTask()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Add to matrix
+      </button>
+    </div>
+
+    <div class="tm-filters">
+      <button class="tm-filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="tm-filter-btn" onclick="setFilter('hw', this)">Homework</button>
+      <button class="tm-filter-btn" onclick="setFilter('exam', this)">Exams</button>
+      <button class="tm-filter-btn" onclick="setFilter('group', this)">Meetings</button>
+      <button class="tm-filter-btn" onclick="setFilter('reading', this)">Reading</button>
+      <button class="tm-focus-toggle" id="focus-btn" onclick="toggleFocus()">FOCUS MODE</button>
+    </div>
+
+    <div id="tm-list-container"></div>
+
+  </div>
+</div>
+
+<script>
+  // ── User isolation ──
+  // Each user's tasks are stored under a unique key derived from their name + PIN hash.
+  // localStorage is browser-local, so users on different machines never share data.
+  // Users on the same machine are separated by their name+PIN key.
+
+  let currentUserKey = null;
+  let tasks = [];
+  let filter = 'all';
+  let focusMode = false;
+  let nextId = 1;
+
+  function hashKey(name, pin) {
+    // Simple deterministic key — not cryptographic, but sufficient for task isolation
+    const str = name.trim().toLowerCase() + ':' + pin;
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    }
+    return 'tm_user_' + Math.abs(h).toString(36);
+  }
+
+  function handleLogin() {
+    const name = document.getElementById('login-name').value.trim();
+    const pin  = document.getElementById('login-pin').value.trim();
+    if (!name) { document.getElementById('login-name').focus(); return; }
+    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+      alert('Please enter a 4-digit PIN.');
+      document.getElementById('login-pin').focus();
+      return;
+    }
+    currentUserKey = hashKey(name, pin);
+    // Store session so the user stays logged in on refresh
+    sessionStorage.setItem('tm_session', JSON.stringify({ name, key: currentUserKey }));
+    showApp(name);
+  }
+
+  function restoreSession() {
+    try {
+      const s = JSON.parse(sessionStorage.getItem('tm_session'));
+      if (s && s.key) {
+        currentUserKey = s.key;
+        showApp(s.name);
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  }
+
+  function showApp(name) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('user-btn').textContent = name + ' · sign out';
+    loadTasks();
+    render();
+  }
+
+  function logout() {
+    if (!confirm('Sign out? Your tasks are saved and will be here when you return.')) return;
+    sessionStorage.removeItem('tm_session');
+    currentUserKey = null;
+    tasks = [];
+    document.getElementById('login-name').value = '';
+    document.getElementById('login-pin').value = '';
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  // ── Storage ──
+  function loadTasks() {
+    try {
+      const raw = localStorage.getItem(currentUserKey);
+      if (raw) {
+        const d = JSON.parse(raw);
+        tasks  = d.tasks  || [];
+        nextId = d.nextId || tasks.length + 1;
+      } else {
+        tasks = []; nextId = 1;
+      }
+    } catch(e) { tasks = []; nextId = 1; }
+  }
+
+  function save() {
+    try { localStorage.setItem(currentUserKey, JSON.stringify({ tasks, nextId })); } catch(e) {}
+  }
+
+  // ── Task logic ──
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(dateStr + 'T00:00:00');
+    return Math.round((d - today) / 86400000);
+  }
+
+  function formatDue(dateStr) {
+    if (!dateStr) return '';
+    const days = daysUntil(dateStr);
+    if (days < 0) return Math.abs(days) + 'd overdue';
+    if (days === 0) return 'due today';
+    if (days === 1) return 'due tomorrow';
+    return 'due in ' + days + 'd';
+  }
+
+  function urgency(task) {
+    if (task.done || !task.date) return 'none';
+    const d = daysUntil(task.date);
+    if (d < 0) return 'overdue';
+    if (d <= 2) return 'urgent';
+    if (d <= 5) return 'soon';
+    return 'none';
+  }
+
+  function addTask() {
+    const name = document.getElementById('inp-task').value.trim();
+    if (!name) { document.getElementById('inp-task').focus(); return; }
+    tasks.unshift({
+      id: nextId++,
+      name,
+      date: document.getElementById('inp-date').value,
+      cat:  document.getElementById('inp-cat').value,
+      pri:  document.getElementById('inp-pri').value,
+      done: false,
+      created: Date.now()
+    });
+    document.getElementById('inp-task').value = '';
+    save(); render();
+  }
+
+  function toggleDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; save(); render(); }
+  }
+
+  function deleteTask(id) {
+    if (!confirm('Delete this task?')) return;
+    tasks = tasks.filter(t => t.id !== id);
+    save(); render();
+  }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.tm-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function toggleFocus() {
+    focusMode = !focusMode;
+    const btn = document.getElementById('focus-btn');
+    btn.classList.toggle('on', focusMode);
+    btn.textContent = focusMode ? 'FOCUS: ON' : 'FOCUS MODE';
+    render();
+  }
+
+  function sortTasks(list) {
+    const priOrder = { high: 0, med: 1, low: 2 };
+    const uOrder   = { overdue: 0, urgent: 1, soon: 2, none: 3 };
+    return [...list].sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      const ua = urgency(a), ub = urgency(b);
+      if (uOrder[ua] !== uOrder[ub]) return uOrder[ua] - uOrder[ub];
+      if (priOrder[a.pri] !== priOrder[b.pri]) return priOrder[a.pri] - priOrder[b.pri];
+      return 0;
+    });
+  }
+
+  function render() {
+    document.getElementById('tm-date-display').textContent =
+      new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+    const total        = tasks.length;
+    const done         = tasks.filter(t => t.done).length;
+    const urgentCount  = tasks.filter(t => !t.done && ['urgent','overdue'].includes(urgency(t))).length;
+    const meetings     = tasks.filter(t => t.cat === 'group' && !t.done).length;
+
+    document.getElementById('stat-total').textContent  = total;
+    document.getElementById('stat-urgent').textContent = urgentCount;
+    document.getElementById('stat-done').textContent   = done;
+    document.getElementById('stat-groups').textContent = meetings;
+
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    document.getElementById('tm-progress-fill').style.width = pct + '%';
+    document.getElementById('tm-progress-label').textContent = pct + '% complete';
+
+    let visible = tasks.filter(t => filter === 'all' || t.cat === filter);
+    visible = sortTasks(visible);
+    if (focusMode) visible = visible.filter(t => !t.done).slice(0, 3);
+
+    const catLabel = { hw: 'homework', exam: 'exam', group: 'group mtg', reading: 'reading', other: 'other' };
+    const priLabel = { high: 'high', med: 'med', low: 'low' };
+    const container = document.getElementById('tm-list-container');
+
+    if (visible.length === 0) {
+      container.innerHTML = '<div class="tm-empty">' +
+        (focusMode ? '✓ nothing urgent right now' : 'no tasks yet — add one above') + '</div>';
+      return;
+    }
+
+    let html = '<div class="tm-list">';
+    if (focusMode) html += '<div class="tm-section-label">Focus — top ' + visible.length +
+      ' task' + (visible.length > 1 ? 's' : '') + '</div>';
+
+    visible.forEach(t => {
+      const u       = urgency(t);
+      const dueText = formatDue(t.date);
+      const dueClass  = u === 'overdue' ? 'overdue' : (u === 'urgent' || u === 'soon') ? 'soon' : '';
+      const taskClass = ['urgent','overdue'].includes(u) ? 'urgent-task' : u === 'soon' ? 'soon-task' : '';
+
+      html += `<div class="tm-task ${t.done ? 'done-task' : ''} ${taskClass}">
+        <button class="tm-check ${t.done ? 'checked' : ''}" onclick="toggleDone(${t.id})" aria-label="${t.done ? 'Mark incomplete' : 'Mark complete'}">
+          ${t.done ? '<i class="ti ti-check" style="font-size:11px;color:white" aria-hidden="true"></i>' : ''}
+        </button>
+        <div class="tm-task-body">
+          <div class="tm-task-name ${t.done ? 'strike' : ''}">${t.name}</div>
+          <div class="tm-task-meta">
+            <span class="tm-badge cat-${t.cat}">${catLabel[t.cat]}</span>
+            <span class="tm-badge pri-${t.pri}">${priLabel[t.pri]}</span>
+            ${dueText ? `<span class="tm-due ${dueClass}">${dueText}</span>` : ''}
+          </div>
+        </div>
+        <button class="tm-del" onclick="deleteTask(${t.id})" aria-label="Delete task">
+          <i class="ti ti-trash" aria-hidden="true"></i>
+        </button>
+      </div>`;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // ── Boot ──
+  document.getElementById('login-pin').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  document.getElementById('login-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pin').focus(); });
+  document.getElementById('inp-task').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+  if (!restoreSession()) {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+</script>
+</body>
+</html>
