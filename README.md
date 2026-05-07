@@ -32,24 +32,23 @@ Click Save — your site will be live at:
 https://<your-username>.github.io/<your-repo-name>
 It may take 1–2 minutes for GitHub Pages to deploy on the first push.
 
-Local development
-No build step or dependencies needed. Just open the file directly in your browser:
-bashopen index.html
-# or on Windows:
-start index.html
+## Local development
 
-External dependencies (CDN)
+No build step or dependencies needed. Just open the file directly in your browser:
+bashopen index.html or on Windows: start index.html
+
+## External dependencies (CDN)
+
 The tool loads two resources at runtime — no npm install required:
 ResourcePurposeGoogle Fonts (Syne + Space Mono)TypographyTabler Icons via cdnjsUI icons
 Both load from public CDNs. The tool will still function (with fallback fonts and no icons) in offline mode.
 
-Project structure
+## Project structure
 index.html      # The entire app — HTML, CSS, and JS in one file
 README.md       # This file
 
-Built for
-BACS / UX Design coursework — digital tool design assignment.
+Built for BACS / UX Design coursework — digital tool design assignment.
 Designed to address cognitive overload, task capture failure, and deadline blindness in MSBA students.
 
-License
+## License
 MIT — free to use, fork, and adapt.
