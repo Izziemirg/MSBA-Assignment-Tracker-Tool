@@ -1,3 +1,6 @@
+As a part of an assignment for my MSBA program at the University of Virginia, I created a lightweight task tracker for busy MSBA students and conduted A/B testing to determine it's efficacy and highlight the iterative cycle in the prototyping process.
+
+
 ## Task Matrix | MSBA Planner
 
 A lightweight, single-file task manager built for busy MSBA students. No backend, no accounts, no setup, just open and go.
